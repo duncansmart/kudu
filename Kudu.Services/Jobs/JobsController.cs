@@ -179,6 +179,12 @@ namespace Kudu.Services.Jobs
         {
             try
             {
+                if (FileSystemHelpers.IsFileSystemReadOnly())
+                {
+                    // return 503 to ask caller to retry, since ReadOnly file system should be temporary
+                    return Request.CreateResponse(HttpStatusCode.ServiceUnavailable);
+                }
+
                 _triggeredJobsManager.InvokeTriggeredJob(jobName, arguments, "External - " + Request.Headers.UserAgent);
                 return Request.CreateResponse(HttpStatusCode.Accepted);
             }
